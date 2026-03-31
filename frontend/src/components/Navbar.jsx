@@ -14,6 +14,7 @@ export default function Navbar() {
           <>
             <Link to="/">Dashboard</Link>
             <Link to="/history">History</Link>
+            <Link to="/settings">Settings</Link>
             <span style={{ marginLeft: 16, opacity: 0.85 }}>{user.username}</span>
             <button onClick={logout} style={{ marginLeft: 12 }}>Logout</button>
           </>

@@ -26,7 +26,7 @@ export default function Dashboard() {
       </div>
 
       <h2 className="section-title">Active Games ({active.length})</h2>
-      {active.length === 0 && <p style={{ color: '#888' }}>No active games. Create one!</p>}
+      {active.length === 0 && <p style={{ color: 'var(--text-secondary)' }}>No active games. Create one!</p>}
       {active.map((g) => (
         <Link to={`/games/${g.id}`} key={g.id} style={{ textDecoration: 'none', color: 'inherit' }}>
           <div className="card">
@@ -39,7 +39,7 @@ export default function Dashboard() {
       ))}
 
       <h2 className="section-title">Completed Games ({completed.length})</h2>
-      {completed.length === 0 && <p style={{ color: '#888' }}>No completed games yet.</p>}
+      {completed.length === 0 && <p style={{ color: 'var(--text-secondary)' }}>No completed games yet.</p>}
       {completed.map((g) => (
         <Link to={`/games/${g.id}`} key={g.id} style={{ textDecoration: 'none', color: 'inherit' }}>
           <div className="card">

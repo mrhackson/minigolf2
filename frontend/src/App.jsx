@@ -8,6 +8,7 @@ import CreateGame from './pages/CreateGame'
 import GameView from './pages/GameView'
 import JoinGame from './pages/JoinGame'
 import History from './pages/History'
+import Settings from './pages/Settings'
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth()
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/games/:id" element={<PrivateRoute><GameView /></PrivateRoute>} />
           <Route path="/join/:inviteCode" element={<PrivateRoute><JoinGame /></PrivateRoute>} />
           <Route path="/history" element={<PrivateRoute><History /></PrivateRoute>} />
+          <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
         </Routes>
       </div>
     </>

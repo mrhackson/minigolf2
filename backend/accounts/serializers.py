@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
+from .models import UserPreferences
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -18,7 +19,14 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
+class UserPreferencesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserPreferences
+        fields = ['theme']
+
+
 class UserSerializer(serializers.ModelSerializer):
+    preferences = UserPreferencesSerializer(read_only=True)
     class Meta:
         model = User
-        fields = ('id', 'username', 'email')
+        fields = ('id', 'username', 'email', 'preferences')

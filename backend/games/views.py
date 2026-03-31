@@ -3,13 +3,15 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Game, GamePlayer, Score
+from .models import Game, GamePlayer, Score, GuestPlayer
 from .serializers import (
     GameListSerializer,
     GameDetailSerializer,
     GameCreateSerializer,
     ScoreSubmitSerializer,
     GameHistorySerializer,
+    GuestPlayerCreateSerializer,
+    BulkScoreUpdateSerializer,
 )
 
 
@@ -80,12 +82,19 @@ class ScoreView(APIView):
                 {'detail': 'Game not found.'}, status=status.HTTP_404_NOT_FOUND
             )
 
-        players = game.players.select_related('user').prefetch_related('scores').all()
-        from .serializers import PlayerScoreSerializer
-
-        return Response(PlayerScoreSerializer(players, many=True).data)
+        # Get both registered and guest players with their scores
+        registered_players = game.players.select_related('user').prefetch_related('scores').all()
+        guest_players = game.guest_players.prefetch_related('scores').all()
+        
+        from .serializers import PlayerScoreSerializer, GuestPlayerSerializer
+        
+        return Response({
+            'registered_players': PlayerScoreSerializer(registered_players, many=True).data,
+            'guest_players': GuestPlayerSerializer(guest_players, many=True).data
+        })
 
     def post(self, request, pk):
+        """Original score submission for current user only"""
         try:
             game = Game.objects.get(pk=pk, players__user=request.user)
         except Game.DoesNotExist:
@@ -128,3 +137,112 @@ class GameHistoryView(generics.ListAPIView):
             .annotate(total_score=Subquery(total_score_subquery, output_field=IntegerField()))
             .distinct()
         )
+
+
+class GuestPlayerView(APIView):
+    """View for managing guest players in a game"""
+    
+    def post(self, request, pk):
+        """Add a guest player to a game"""
+        try:
+            game = Game.objects.get(pk=pk, players__user=request.user)
+        except Game.DoesNotExist:
+            return Response(
+                {'detail': 'Game not found.'}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        if game.status == 'completed':
+            return Response(
+                {'detail': 'Cannot add players to a completed game.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Check if user is the creator (for now, only creators can add guest players)
+        if game.creator != request.user:
+            return Response(
+                {'detail': 'Only the game creator can add guest players.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = GuestPlayerCreateSerializer(data=request.data, context={'game': game})
+        serializer.is_valid(raise_exception=True)
+        
+        guest_player = serializer.save(game=game)
+        
+        from .serializers import GuestPlayerSerializer
+        return Response(
+            GuestPlayerSerializer(guest_player).data,
+            status=status.HTTP_201_CREATED
+        )
+
+    def delete(self, request, pk, guest_id):
+        """Remove a guest player from a game"""
+        try:
+            game = Game.objects.get(pk=pk, players__user=request.user)
+        except Game.DoesNotExist:
+            return Response(
+                {'detail': 'Game not found.'}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        if game.creator != request.user:
+            return Response(
+                {'detail': 'Only the game creator can remove guest players.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            guest_player = GuestPlayer.objects.get(id=guest_id, game=game)
+            guest_player.delete()
+            return Response({'detail': 'Guest player removed.'})
+        except GuestPlayer.DoesNotExist:
+            return Response(
+                {'detail': 'Guest player not found.'}, status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class BulkScoreView(APIView):
+    """View for updating scores for any player (guest or registered) - creator only"""
+    
+    def post(self, request, pk):
+        """Update scores for any players in bulk"""
+        try:
+            game = Game.objects.get(pk=pk, players__user=request.user)
+        except Game.DoesNotExist:
+            return Response(
+                {'detail': 'Game not found.'}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        if game.status == 'completed':
+            return Response(
+                {'detail': 'Cannot update scores for a completed game.'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # Only game creator can edit all players' scores
+        if game.creator != request.user:
+            return Response(
+                {'detail': 'Only the game creator can edit all players\' scores.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = BulkScoreUpdateSerializer(data=request.data, context={'game': game})
+        serializer.is_valid(raise_exception=True)
+
+        # Update scores
+        for score_data in serializer.validated_data['scores']:
+            if score_data['player_type'] == 'user':
+                game_player = GamePlayer.objects.get(game=game, user_id=score_data['player_id'])
+                Score.objects.update_or_create(
+                    game_player=game_player,
+                    hole_number=score_data['hole_number'],
+                    defaults={'strokes': score_data['strokes']}
+                )
+            else:  # guest
+                guest_player = GuestPlayer.objects.get(game=game, id=score_data['player_id'])
+                Score.objects.update_or_create(
+                    guest_player=guest_player,
+                    hole_number=score_data['hole_number'],
+                    defaults={'strokes': score_data['strokes']}
+                )
+
+        return Response({'detail': 'Scores updated successfully.'})

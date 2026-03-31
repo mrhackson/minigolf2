@@ -20,7 +20,7 @@ export default function History() {
       <h1 style={{ marginTop: 8 }}>Game History</h1>
 
       {games.length === 0 && (
-        <p style={{ color: '#888', marginTop: 16 }}>
+        <p style={{ color: 'var(--text-secondary)', marginTop: 16 }}>
           No games played yet. <Link to="/games/new">Start one!</Link>
         </p>
       )}

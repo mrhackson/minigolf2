@@ -4,7 +4,7 @@ import api from '../api/client'
 
 export default function CreateGame() {
   const navigate = useNavigate()
-  const [name, setName] = useState('')
+  const [name, setName] = useState(new Date().toISOString().split('T')[0])
   const [numHoles, setNumHoles] = useState(18)
   const [error, setError] = useState('')
 
@@ -35,10 +35,9 @@ export default function CreateGame() {
           placeholder="Game name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          required
           autoFocus
         />
-        <label style={{ display: 'block', marginBottom: 6, fontSize: '0.9rem', color: '#555' }}>
+        <label style={{ display: 'block', marginBottom: 6, fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
           Number of holes
         </label>
         <input

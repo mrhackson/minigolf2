@@ -1,3 +1,85 @@
+/* Theme Variables */
+:root {
+  /* Default Theme */
+  --primary-color: #2e7d32;
+  --primary-hover: #1b5e20;
+  --primary-light: #e8f5e9;
+  --background: #f0f4f0;
+  --surface: #ffffff;
+  --text-primary: #1a1a2e;
+  --text-secondary: #666666;
+  --text-meta: #333333;
+  --secondary-color: #546e7a;
+  --secondary-hover: #37474f;
+  --danger-color: #c62828;
+  --danger-hover: #b71c1c;
+  --info-color: #1565c0;
+  --info-light: #e3f2fd;
+  --border-color: #cccccc;
+  --border-light: #dddddd;
+  --input-background: #fafafa;
+  --shadow: rgba(0, 0, 0, 0.08);
+  --shadow-nav: rgba(0, 0, 0, 0.1);
+  --nav-button-bg: rgba(255, 255, 255, 0.2);
+  --nav-button-border: rgba(255, 255, 255, 0.4);
+  --nav-button-hover: rgba(255, 255, 255, 0.3);
+  --total-bg: #f1f8e9;
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+  --primary-color: #4caf50;
+  --primary-hover: #388e3c;
+  --primary-light: #1b2e1c;
+  --background: #121212;
+  --surface: #1e1e1e;
+  --text-primary: #e0e0e0;
+  --text-secondary: #aaaaaa;
+  --text-meta: #cccccc;
+  --secondary-color: #78909c;
+  --secondary-hover: #546e7a;
+  --danger-color: #f44336;
+  --danger-hover: #d32f2f;
+  --info-color: #42a5f5;
+  --info-light: #1a2332;
+  --border-color: #404040;
+  --border-light: #333333;
+  --input-background: #2a2a2a;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --shadow-nav: rgba(0, 0, 0, 0.4);
+  --nav-button-bg: rgba(255, 255, 255, 0.1);
+  --nav-button-border: rgba(255, 255, 255, 0.2);
+  --nav-button-hover: rgba(255, 255, 255, 0.2);
+  --total-bg: #2a3a2b;
+}
+
+/* Midnight Blue Theme */
+[data-theme="midnight"] {
+  --primary-color: #3f51b5;
+  --primary-hover: #303f9f;
+  --primary-light: #1a1f3a;
+  --background: #0d1421;
+  --surface: #1a1f2e;
+  --text-primary: #e3f2fd;
+  --text-secondary: #90a4ae;
+  --text-meta: #b0bec5;
+  --secondary-color: #5c6bc0;
+  --secondary-hover: #3f51b5;
+  --danger-color: #f06292;
+  --danger-hover: #e91e63;
+  --info-color: #29b6f6;
+  --info-light: #162025;
+  --border-color: #37474f;
+  --border-light: #2e3944;
+  --input-background: #263238;
+  --shadow: rgba(0, 0, 0, 0.4);
+  --shadow-nav: rgba(0, 0, 0, 0.5);
+  --nav-button-bg: rgba(255, 255, 255, 0.08);
+  --nav-button-border: rgba(255, 255, 255, 0.15);
+  --nav-button-hover: rgba(255, 255, 255, 0.15);
+  --total-bg: #1f2a3a;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -7,13 +89,14 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
     Ubuntu, Cantarell, sans-serif;
-  background: #f0f4f0;
-  color: #1a1a2e;
+  background: var(--background);
+  color: var(--text-primary);
   line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 a {
-  color: #2e7d32;
+  color: var(--primary-color);
   text-decoration: none;
 }
 
@@ -29,13 +112,13 @@ a:hover {
 
 /* Navigation */
 nav {
-  background: #2e7d32;
+  background: var(--primary-color);
   padding: 12px 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   color: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px var(--shadow-nav);
 }
 
 nav a {
@@ -56,9 +139,9 @@ nav .brand {
 }
 
 nav button {
-  background: rgba(255,255,255,0.2);
+  background: var(--nav-button-bg);
   color: white;
-  border: 1px solid rgba(255,255,255,0.4);
+  border: 1px solid var(--nav-button-border);
   padding: 6px 14px;
   border-radius: 4px;
   cursor: pointer;
@@ -66,7 +149,7 @@ nav button {
 }
 
 nav button:hover {
-  background: rgba(255,255,255,0.3);
+  background: var(--nav-button-hover);
 }
 
 /* Forms */
@@ -78,38 +161,40 @@ nav button:hover {
 }
 
 .form-card {
-  background: white;
+  background: var(--surface);
   padding: 32px;
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 12px var(--shadow);
   width: 100%;
   max-width: 400px;
 }
 
 .form-card h2 {
   margin-bottom: 20px;
-  color: #2e7d32;
+  color: var(--primary-color);
 }
 
 .form-card input {
   width: 100%;
   padding: 10px 12px;
   margin-bottom: 14px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 1rem;
+  background: var(--surface);
+  color: var(--text-primary);
 }
 
 .form-card input:focus {
   outline: none;
-  border-color: #2e7d32;
-  box-shadow: 0 0 0 2px rgba(46,125,50,0.2);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-light);
 }
 
 .form-card button {
   width: 100%;
   padding: 10px;
-  background: #2e7d32;
+  background: var(--primary-color);
   color: white;
   border: none;
   border-radius: 4px;
@@ -119,7 +204,7 @@ nav button:hover {
 }
 
 .form-card button:hover {
-  background: #1b5e20;
+  background: var(--primary-hover);
 }
 
 .form-card .switch {
@@ -129,8 +214,8 @@ nav button:hover {
 }
 
 .error-msg {
-  color: #c62828;
-  background: #ffebee;
+  color: var(--danger-color);
+  background: var(--primary-light);
   padding: 8px 12px;
   border-radius: 4px;
   margin-bottom: 14px;
@@ -139,34 +224,34 @@ nav button:hover {
 
 /* Cards and lists */
 .card {
-  background: white;
+  background: var(--surface);
   border-radius: 8px;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+  box-shadow: 0 1px 6px var(--shadow);
   padding: 20px;
   margin-bottom: 16px;
 }
 
 .card h3 {
   margin-bottom: 8px;
-  color: #2e7d32;
+  color: var(--primary-color);
 }
 
 .card .meta {
   font-size: 0.85rem;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .section-title {
   font-size: 1.2rem;
   margin: 24px 0 12px;
-  color: #333;
+  color: var(--text-meta);
 }
 
 /* Buttons */
 .btn {
   display: inline-block;
   padding: 8px 18px;
-  background: #2e7d32;
+  background: var(--primary-color);
   color: white;
   border: none;
   border-radius: 4px;
@@ -177,25 +262,25 @@ nav button:hover {
 }
 
 .btn:hover {
-  background: #1b5e20;
+  background: var(--primary-hover);
   text-decoration: none;
   color: white;
 }
 
 .btn-secondary {
-  background: #546e7a;
+  background: var(--secondary-color);
 }
 
 .btn-secondary:hover {
-  background: #37474f;
+  background: var(--secondary-hover);
 }
 
 .btn-danger {
-  background: #c62828;
+  background: var(--danger-color);
 }
 
 .btn-danger:hover {
-  background: #b71c1c;
+  background: var(--danger-hover);
 }
 
 .btn-sm {
@@ -216,15 +301,15 @@ nav button:hover {
 
 .scorecard th,
 .scorecard td {
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-light);
   padding: 8px 12px;
   text-align: center;
   white-space: nowrap;
 }
 
 .scorecard th {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: var(--primary-light);
+  color: var(--primary-color);
   font-weight: 600;
   position: sticky;
   top: 0;
@@ -234,14 +319,14 @@ nav button:hover {
 .scorecard td:first-child {
   position: sticky;
   left: 0;
-  background: white;
+  background: var(--surface);
   z-index: 1;
   text-align: left;
   font-weight: 600;
 }
 
 .scorecard th:first-child {
-  background: #e8f5e9;
+  background: var(--primary-light);
   z-index: 2;
 }
 
@@ -249,17 +334,19 @@ nav button:hover {
   width: 50px;
   padding: 4px;
   text-align: center;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   border-radius: 3px;
+  background: var(--surface);
+  color: var(--text-primary);
 }
 
 .scorecard input[type="number"]:focus {
   outline: none;
-  border-color: #2e7d32;
+  border-color: var(--primary-color);
 }
 
 .scorecard .total-col {
-  background: #f1f8e9;
+  background: var(--total-bg);
   font-weight: 700;
 }
 
@@ -276,10 +363,11 @@ nav button:hover {
   flex: 1;
   min-width: 200px;
   padding: 8px 12px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 0.9rem;
-  background: #fafafa;
+  background: var(--input-background);
+  color: var(--text-primary);
 }
 
 /* Status badges */
@@ -293,13 +381,13 @@ nav button:hover {
 }
 
 .badge-active {
-  background: #e8f5e9;
-  color: #2e7d32;
+  background: var(--primary-light);
+  color: var(--primary-color);
 }
 
 .badge-completed {
-  background: #e3f2fd;
-  color: #1565c0;
+  background: var(--info-light);
+  color: var(--info-color);
 }
 
 /* Responsive */
@@ -310,5 +398,52 @@ nav button:hover {
   }
   .container {
     padding: 12px;
+  }
+}
+
+/* Player Management */
+.player-management {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid var(--border-light);
+}
+
+.player-management h3 {
+  margin-bottom: 12px;
+  color: var(--primary-color);
+  font-size: 1rem;
+}
+
+.player-management input[type="text"] {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  min-width: 150px;
+}
+
+.player-management input[type="text"]:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-light);
+}
+
+/* Small responsive buttons */
+@media (max-width: 768px) {
+  .scorecard input[type="number"] {
+    width: 45px;
+  }
+  
+  .btn-sm {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+  }
+  
+  .player-management input[type="text"] {
+    min-width: 120px;
+    margin-bottom: 8px;
   }
 }
