@@ -26,7 +26,7 @@ minigolf2/
 ## Tech Stack
 
 ### Backend
-- **Python / Django 6** with **Django REST Framework**
+- **Python / Django 5+** with **Django REST Framework**
 - **JWT authentication** via `djangorestframework-simplejwt` (60-minute access tokens, 7-day refresh tokens)
 - **CORS** via `django-cors-headers` (allowed origin: `http://localhost:5173`)
 - **Database**: SQLite (`backend/db.sqlite3`) — suitable for development
