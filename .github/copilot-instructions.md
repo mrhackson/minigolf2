@@ -53,8 +53,8 @@ minigolf2/
 
 - All endpoints require JWT authentication except registration and token endpoints.
 - Base URL: `http://localhost:8000`
-- Token endpoints follow simplejwt defaults (`/api/token/`, `/api/token/refresh/`).
-- App-level routes are namespaced under `/api/accounts/` and `/api/games/`.
+- Token endpoints are exposed under `/api/auth/login/` (access) and `/api/auth/refresh/` (refresh).
+- App-level routes are namespaced under `/api/auth/` (accounts/auth) and `/api/games/` (games).
 
 ## Frontend Conventions
 
