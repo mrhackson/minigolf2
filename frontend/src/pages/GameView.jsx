@@ -14,6 +14,7 @@ export default function GameView() {
   const [allPlayers, setAllPlayers] = useState([])
   const [addingPlayer, setAddingPlayer] = useState(false)
   const [newPlayerName, setNewPlayerName] = useState('')
+  const [controlsOpen, setControlsOpen] = useState(false)
 
   const fetchGame = useCallback(async () => {
     try {
@@ -185,57 +186,65 @@ export default function GameView() {
           {game.name}{' '}
           <span className={`badge badge-${game.status}`}>{game.status}</span>
         </h1>
-        <div style={{ display: 'flex', gap: 8 }}>
-          {game.status === 'active' && (
-            <>
-              {canEditAllScores ? (
-                <button className="btn" onClick={saveAllScores} disabled={saving}>
-                  {saving ? 'Saving...' : 'Save All Scores'}
-                </button>
-              ) : (
-                <button className="btn" onClick={saveScores} disabled={saving}>
-                  {saving ? 'Saving...' : 'Save My Scores'}
-                </button>
-              )}
-              {isCreator && (
-                <button className="btn btn-secondary" onClick={completeGame}>
-                  Complete Game
-                </button>
-              )}
-            </>
-          )}
-        </div>
+        {(game.status === 'active') && (
+          <button
+            className="btn btn-secondary btn-sm controls-toggle"
+            onClick={() => setControlsOpen((o) => !o)}
+            aria-expanded={controlsOpen}
+          >
+            ⚙ Controls {controlsOpen ? '▲' : '▼'}
+          </button>
+        )}
       </div>
 
       {error && <div className="error-msg" style={{ marginTop: 12 }}>{error}</div>}
 
-      {game.status === 'active' && isCreator && (
-        <div className="player-management" style={{ marginTop: 16, marginBottom: 16 }}>
-          <h3>Add Player</h3>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+      {controlsOpen && game.status === 'active' && (
+        <div className="controls-panel">
+          <div className="controls-panel-actions">
+            {canEditAllScores ? (
+              <button className="btn" onClick={saveAllScores} disabled={saving}>
+                {saving ? 'Saving...' : 'Save All Scores'}
+              </button>
+            ) : (
+              <button className="btn" onClick={saveScores} disabled={saving}>
+                {saving ? 'Saving...' : 'Save My Scores'}
+              </button>
+            )}
+            {isCreator && (
+              <button className="btn btn-secondary" onClick={completeGame}>
+                Complete Game
+              </button>
+            )}
+          </div>
+
+          {isCreator && (
+            <div className="player-management" style={{ marginTop: 16 }}>
+              <h3>Add Player</h3>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                <input
+                  type="text"
+                  value={newPlayerName}
+                  onChange={(e) => setNewPlayerName(e.target.value)}
+                  placeholder="Player Name"
+                  onKeyDown={(e) => e.key === 'Enter' && addGuestPlayer()}
+                />
+                <button className="btn btn-sm" onClick={addGuestPlayer} disabled={addingPlayer}>
+                  {addingPlayer ? 'Adding...' : 'Add Player'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="invite-box" style={{ marginTop: 16 }}>
             <input
-              type="text"
-              value={newPlayerName}
-              onChange={(e) => setNewPlayerName(e.target.value)}
-              placeholder="Player Name"
-              onKeyDown={(e) => e.key === 'Enter' && addGuestPlayer()}
+              readOnly
+              value={`${window.location.origin}/join/${game.invite_code}`}
             />
-            <button className="btn btn-sm" onClick={addGuestPlayer} disabled={addingPlayer}>
-              {addingPlayer ? 'Adding...' : 'Add Player'}
+            <button className="btn btn-sm" onClick={copyInviteLink}>
+              {copied ? 'Copied!' : 'Copy Link'}
             </button>
           </div>
-        </div>
-      )}
-
-      {game.status === 'active' && (
-        <div className="invite-box">
-          <input
-            readOnly
-            value={`${window.location.origin}/join/${game.invite_code}`}
-          />
-          <button className="btn btn-sm" onClick={copyInviteLink}>
-            {copied ? 'Copied!' : 'Copy Link'}
-          </button>
         </div>
       )}
 

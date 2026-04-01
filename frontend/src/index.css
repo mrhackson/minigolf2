@@ -401,6 +401,26 @@ nav button:hover {
   }
 }
 
+/* Controls panel */
+.controls-toggle {
+  white-space: nowrap;
+}
+
+.controls-panel {
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 12px;
+  margin-bottom: 8px;
+}
+
+.controls-panel-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 /* Player Management */
 .player-management {
   background: var(--surface);
