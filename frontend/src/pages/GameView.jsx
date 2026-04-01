@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext'
 import api from '../api/client'
 import { launchConfetti } from '../utils/confetti'
 
+const POLL_INTERVAL = 5000
+
 export default function GameView() {
   const { id } = useParams()
   const { user } = useAuth()
@@ -16,37 +18,85 @@ export default function GameView() {
   const [addingPlayer, setAddingPlayer] = useState(false)
   const [newPlayerName, setNewPlayerName] = useState('')
   const [controlsOpen, setControlsOpen] = useState(false)
+  const isDirtyRef = useRef(false)
   const confettiShown = useRef(false)
+
+  const applyGameData = useCallback((data) => {
+    setGame(data)
+
+    // Combine registered and guest players
+    const combinedPlayers = [
+      ...(data.players || []).map(p => ({ ...p, type: 'user', player_id: `user_${p.user_id}` })),
+      ...(data.guest_players || []).map(p => ({ ...p, type: 'guest', player_id: `guest_${p.id}`, username: p.name, user_id: `guest_${p.id}` }))
+    ]
+    setAllPlayers(combinedPlayers)
+
+    // Build scores lookup: { player_id: { holeNumber: strokes } }
+    const s = {}
+    combinedPlayers.forEach((p) => {
+      s[p.player_id] = {}
+      p.scores.forEach((sc) => {
+        s[p.player_id][sc.hole_number] = sc.strokes
+      })
+    })
+    setScores(s)
+    isDirtyRef.current = false
+  }, [])
 
   const fetchGame = useCallback(async () => {
     try {
       const { data } = await api.get(`/games/${id}/`)
-      setGame(data)
-      
-      // Combine registered and guest players
-      const combinedPlayers = [
-        ...(data.players || []).map(p => ({ ...p, type: 'user', player_id: `user_${p.user_id}` })),
-        ...(data.guest_players || []).map(p => ({ ...p, type: 'guest', player_id: `guest_${p.id}`, username: p.name, user_id: `guest_${p.id}` }))
-      ]
-      setAllPlayers(combinedPlayers)
-      
-      // Build scores lookup: { player_id: { holeNumber: strokes } }
-      const s = {}
-      combinedPlayers.forEach((p) => {
-        s[p.player_id] = {}
-        p.scores.forEach((sc) => {
-          s[p.player_id][sc.hole_number] = sc.strokes
-        })
-      })
-      setScores(s)
+      applyGameData(data)
     } catch {
       setError('Game not found.')
     }
-  }, [id])
+  }, [id, applyGameData])
 
   useEffect(() => {
     fetchGame()
   }, [fetchGame])
+
+  const gameStatus = game?.status
+
+  // Auto-refresh scores every POLL_INTERVAL ms while the game is active.
+  // Uses recursive setTimeout to avoid overlapping requests.
+  // While the user has unsaved edits, only non-destructive fields are updated.
+  useEffect(() => {
+    if (gameStatus !== 'active') return
+
+    let cancelled = false
+
+    const poll = async () => {
+      if (cancelled) return
+      try {
+        const { data } = await api.get(`/games/${id}/`)
+        if (!cancelled) {
+          if (!isDirtyRef.current) {
+            // No local edits pending: safely apply full server state.
+            applyGameData(data)
+          } else {
+            // Local edits pending: only apply non-destructive fields so we
+            // still pick up important remote changes like status/num_holes.
+            setGame((prev) => {
+              if (!prev) return prev
+              return { ...prev, status: data.status, num_holes: data.num_holes }
+            })
+          }
+        }
+      } catch {
+        // Silently ignore transient polling errors
+      }
+      if (!cancelled) {
+        setTimeout(poll, POLL_INTERVAL)
+      }
+    }
+
+    poll()
+
+    return () => {
+      cancelled = true
+    }
+  }, [id, gameStatus, applyGameData])
 
   // Confetti when logged-in player wins a completed game
   useEffect(() => {
@@ -69,6 +119,7 @@ export default function GameView() {
   }, [game, allPlayers, user])
 
   const handleScoreChange = (playerId, holeNum, value) => {
+    isDirtyRef.current = true
     setScores((prev) => ({
       ...prev,
       [playerId]: {
