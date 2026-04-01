@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/client'
+import { launchConfetti } from '../utils/confetti'
 
 export default function GameView() {
   const { id } = useParams()
@@ -15,6 +16,7 @@ export default function GameView() {
   const [addingPlayer, setAddingPlayer] = useState(false)
   const [newPlayerName, setNewPlayerName] = useState('')
   const [controlsOpen, setControlsOpen] = useState(false)
+  const confettiShown = useRef(false)
 
   const fetchGame = useCallback(async () => {
     try {
@@ -45,6 +47,26 @@ export default function GameView() {
   useEffect(() => {
     fetchGame()
   }, [fetchGame])
+
+  // Confetti when logged-in player wins a completed game
+  useEffect(() => {
+    if (!game || game.status !== 'completed' || !allPlayers.length) return
+    if (confettiShown.current) return
+
+    // total === 0 means no scores recorded; filter those players out of winner logic
+    const playersWithScores = allPlayers.filter((p) => p.total > 0)
+    if (!playersWithScores.length) return
+
+    const minTotal = Math.min(...playersWithScores.map((p) => p.total))
+    const myPlayer = allPlayers.find((p) => p.type === 'user' && p.user_id === user.id)
+    if (!myPlayer || myPlayer.total !== minTotal) return
+
+    confettiShown.current = true
+    const primaryColor = getComputedStyle(document.documentElement)
+      .getPropertyValue('--primary-color')
+      .trim()
+    launchConfetti([primaryColor, '#ffffff', '#ffd700'])
+  }, [game, allPlayers, user])
 
   const handleScoreChange = (playerId, holeNum, value) => {
     setScores((prev) => ({
@@ -178,6 +200,17 @@ export default function GameView() {
   const holes = Array.from({ length: game.num_holes }, (_, i) => i + 1)
   const isCreator = game.is_creator
   const canEditAllScores = isCreator && game.status === 'active'
+  const isCompleted = game.status === 'completed'
+
+  // Determine winner(s) — lowest total among players who have at least one score
+  // (total === 0 means no scores were recorded for that player)
+  const winnerPlayerIds = (() => {
+    if (!isCompleted || !allPlayers.length) return new Set()
+    const playersWithScores = allPlayers.filter((p) => p.total > 0)
+    if (!playersWithScores.length) return new Set()
+    const minTotal = Math.min(...playersWithScores.map((p) => p.total))
+    return new Set(playersWithScores.filter((p) => p.total === minTotal).map((p) => p.player_id))
+  })()
 
   return (
     <>
@@ -255,8 +288,10 @@ export default function GameView() {
               <th>Hole</th>
               {allPlayers.map((p) => {
                 const isMe = p.type === 'user' && p.user_id === user.id
+                const isWinner = winnerPlayerIds.has(p.player_id)
                 return (
-                  <th key={p.player_id}>
+                  <th key={p.player_id} className={isWinner ? 'winner-col' : ''}>
+                    {isWinner && '🏆 '}
                     {p.username}
                     {isMe && ' (you)'}
                     {p.type === 'guest' && ' (guest)'}
@@ -283,8 +318,9 @@ export default function GameView() {
                   const isMe = p.type === 'user' && p.user_id === user.id
                   const canEditPlayer = canEditAllScores || isMe
                   const playerScores = scores[p.player_id] || {}
+                  const isWinner = winnerPlayerIds.has(p.player_id)
                   return (
-                    <td key={p.player_id}>
+                    <td key={p.player_id} className={isWinner ? 'winner-col' : ''}>
                       {canEditPlayer && game.status === 'active' ? (
                         <input
                           type="number"
@@ -294,7 +330,7 @@ export default function GameView() {
                           style={{ width: '60px' }}
                         />
                       ) : (
-                        playerScores[h] || '-'
+                        playerScores[h] ?? '-'
                       )}
                     </td>
                   )
@@ -304,14 +340,22 @@ export default function GameView() {
             <tr>
               <td className="total-col">Total</td>
               {allPlayers.map((p) => {
+                const isWinner = winnerPlayerIds.has(p.player_id)
                 const playerScores = scores[p.player_id] || {}
-                const total = Object.values(playerScores).reduce(
+                const calculatedTotal = Object.values(playerScores).reduce(
                   (sum, v) => sum + (parseInt(v) || 0),
                   0
                 )
+                // For completed games, prefer server-calculated total; for active games use live state
+                const displayTotal = isCompleted
+                  ? (p.total > 0 ? p.total : calculatedTotal > 0 ? calculatedTotal : '-')
+                  : (calculatedTotal > 0 ? calculatedTotal : '-')
                 return (
-                  <td key={p.player_id} className="total-col">
-                    {total || '-'}
+                  <td
+                    key={p.player_id}
+                    className={`total-col${isWinner ? ' winner-col' : ''}`}
+                  >
+                    {displayTotal}
                   </td>
                 )
               })}

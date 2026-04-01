@@ -478,6 +478,20 @@ nav button:hover {
   font-weight: 700;
 }
 
+.scorecard th.winner-col {
+  background: var(--primary-color) !important;
+  color: #ffffff !important;
+}
+
+.scorecard td.winner-col {
+  background: var(--primary-light);
+}
+
+.scorecard td.winner-col.total-col {
+  background: var(--primary-color) !important;
+  color: #ffffff !important;
+}
+
 /* Invite link */
 .invite-box {
   display: flex;
