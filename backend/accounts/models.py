@@ -6,6 +6,10 @@ class UserPreferences(models.Model):
         ('default', 'Default'),
         ('dark', 'Dark Mode'),
         ('midnight', 'Midnight Blue'),
+        ('sunset', 'Sunset'),
+        ('ocean', 'Ocean'),
+        ('rose', 'Rose'),
+        ('retro', 'Retro'),
     ]
     
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='preferences')
