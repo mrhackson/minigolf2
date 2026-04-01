@@ -252,32 +252,39 @@ export default function GameView() {
         <table className="scorecard">
           <thead>
             <tr>
-              <th>Player</th>
-              {holes.map((h) => (
-                <th key={h}>{h}</th>
-              ))}
-              <th className="total-col">Total</th>
-              {isCreator && game.status === 'active' && <th>Actions</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {allPlayers.map((p) => {
-              const isMe = p.type === 'user' && p.user_id === user.id
-              const canEditPlayer = canEditAllScores || isMe
-              const playerScores = scores[p.player_id] || {}
-              const total = Object.values(playerScores).reduce(
-                (sum, v) => sum + (parseInt(v) || 0),
-                0
-              )
-              return (
-                <tr key={p.player_id}>
-                  <td>
+              <th>Hole</th>
+              {allPlayers.map((p) => {
+                const isMe = p.type === 'user' && p.user_id === user.id
+                return (
+                  <th key={p.player_id}>
                     {p.username}
                     {isMe && ' (you)'}
                     {p.type === 'guest' && ' (guest)'}
-                  </td>
-                  {holes.map((h) => (
-                    <td key={h}>
+                    {isCreator && game.status === 'active' && p.type === 'guest' && (
+                      <button
+                        className="btn btn-sm btn-danger"
+                        onClick={() => removeGuestPlayer(p.id)}
+                        title="Remove player"
+                        style={{ marginLeft: 6 }}
+                      >
+                        ×
+                      </button>
+                    )}
+                  </th>
+                )
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {holes.map((h) => (
+              <tr key={h}>
+                <td>{h}</td>
+                {allPlayers.map((p) => {
+                  const isMe = p.type === 'user' && p.user_id === user.id
+                  const canEditPlayer = canEditAllScores || isMe
+                  const playerScores = scores[p.player_id] || {}
+                  return (
+                    <td key={p.player_id}>
                       {canEditPlayer && game.status === 'active' ? (
                         <input
                           type="number"
@@ -290,24 +297,25 @@ export default function GameView() {
                         playerScores[h] || '-'
                       )}
                     </td>
-                  ))}
-                  <td className="total-col">{total || '-'}</td>
-                  {isCreator && game.status === 'active' && (
-                    <td>
-                      {p.type === 'guest' && (
-                        <button
-                          className="btn btn-sm btn-danger"
-                          onClick={() => removeGuestPlayer(p.id)}
-                          title="Remove player"
-                        >
-                          ×
-                        </button>
-                      )}
-                    </td>
-                  )}
-                </tr>
-              )
-            })}
+                  )
+                })}
+              </tr>
+            ))}
+            <tr>
+              <td className="total-col">Total</td>
+              {allPlayers.map((p) => {
+                const playerScores = scores[p.player_id] || {}
+                const total = Object.values(playerScores).reduce(
+                  (sum, v) => sum + (parseInt(v) || 0),
+                  0
+                )
+                return (
+                  <td key={p.player_id} className="total-col">
+                    {total || '-'}
+                  </td>
+                )
+              })}
+            </tr>
           </tbody>
         </table>
       </div>
