@@ -61,10 +61,23 @@ export default function GameView() {
   useEffect(() => {
     if (gameStatus !== 'active') return
     const interval = setInterval(async () => {
-      if (isDirtyRef.current) return
       try {
         const { data } = await api.get(`/games/${id}/`)
-        applyGameData(data)
+        if (!isDirtyRef.current) {
+          // No local edits pending: safely apply full server state.
+          applyGameData(data)
+        } else {
+          // Local edits pending: only apply non-destructive fields so we
+          // still pick up important remote changes like status/num_holes.
+          setGame((prev) => {
+            if (!prev) return prev
+            return {
+              ...prev,
+              status: data.status,
+              num_holes: data.num_holes,
+            }
+          })
+        }
       } catch {
         // Silently ignore transient polling errors
       }
