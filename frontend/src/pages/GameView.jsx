@@ -1,7 +1,9 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/client'
+
+const POLL_INTERVAL = 5000
 
 export default function GameView() {
   const { id } = useParams()
@@ -15,38 +17,63 @@ export default function GameView() {
   const [addingPlayer, setAddingPlayer] = useState(false)
   const [newPlayerName, setNewPlayerName] = useState('')
   const [controlsOpen, setControlsOpen] = useState(false)
+  const isDirtyRef = useRef(false)
+
+  const applyGameData = useCallback((data) => {
+    setGame(data)
+
+    // Combine registered and guest players
+    const combinedPlayers = [
+      ...(data.players || []).map(p => ({ ...p, type: 'user', player_id: `user_${p.user_id}` })),
+      ...(data.guest_players || []).map(p => ({ ...p, type: 'guest', player_id: `guest_${p.id}`, username: p.name, user_id: `guest_${p.id}` }))
+    ]
+    setAllPlayers(combinedPlayers)
+
+    // Build scores lookup: { player_id: { holeNumber: strokes } }
+    const s = {}
+    combinedPlayers.forEach((p) => {
+      s[p.player_id] = {}
+      p.scores.forEach((sc) => {
+        s[p.player_id][sc.hole_number] = sc.strokes
+      })
+    })
+    setScores(s)
+    isDirtyRef.current = false
+  }, [])
 
   const fetchGame = useCallback(async () => {
     try {
       const { data } = await api.get(`/games/${id}/`)
-      setGame(data)
-      
-      // Combine registered and guest players
-      const combinedPlayers = [
-        ...(data.players || []).map(p => ({ ...p, type: 'user', player_id: `user_${p.user_id}` })),
-        ...(data.guest_players || []).map(p => ({ ...p, type: 'guest', player_id: `guest_${p.id}`, username: p.name, user_id: `guest_${p.id}` }))
-      ]
-      setAllPlayers(combinedPlayers)
-      
-      // Build scores lookup: { player_id: { holeNumber: strokes } }
-      const s = {}
-      combinedPlayers.forEach((p) => {
-        s[p.player_id] = {}
-        p.scores.forEach((sc) => {
-          s[p.player_id][sc.hole_number] = sc.strokes
-        })
-      })
-      setScores(s)
+      applyGameData(data)
     } catch {
       setError('Game not found.')
     }
-  }, [id])
+  }, [id, applyGameData])
 
   useEffect(() => {
     fetchGame()
   }, [fetchGame])
 
+  const gameStatus = game?.status
+
+  // Auto-refresh scores every POLL_INTERVAL ms while the game is active.
+  // Polling is skipped when the user has unsaved local edits to avoid overwriting them.
+  useEffect(() => {
+    if (gameStatus !== 'active') return
+    const interval = setInterval(async () => {
+      if (isDirtyRef.current) return
+      try {
+        const { data } = await api.get(`/games/${id}/`)
+        applyGameData(data)
+      } catch {
+        // Silently ignore transient polling errors
+      }
+    }, POLL_INTERVAL)
+    return () => clearInterval(interval)
+  }, [id, gameStatus, applyGameData])
+
   const handleScoreChange = (playerId, holeNum, value) => {
+    isDirtyRef.current = true
     setScores((prev) => ({
       ...prev,
       [playerId]: {
