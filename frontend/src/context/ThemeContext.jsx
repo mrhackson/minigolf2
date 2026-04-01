@@ -28,17 +28,44 @@ export const ThemeProvider = ({ children }) => {
     default: {
       id: 'default',
       name: 'Default',
-      description: 'Classic green minigolf theme'
+      description: 'Classic green minigolf theme',
+      preview: ['#2e7d32', '#f0f4f0']
     },
     dark: {
       id: 'dark',
       name: 'Dark Mode',
-      description: 'Easy on the eyes dark theme'
+      description: 'Easy on the eyes dark theme',
+      preview: ['#4caf50', '#1e1e1e']
     },
     midnight: {
       id: 'midnight',
       name: 'Midnight Blue',
-      description: 'Deep blue night theme'
+      description: 'Deep blue night theme',
+      preview: ['#3f51b5', '#0d1421']
+    },
+    sunset: {
+      id: 'sunset',
+      name: 'Sunset',
+      description: 'Warm orange and golden tones',
+      preview: ['#e65100', '#fdf6f0']
+    },
+    ocean: {
+      id: 'ocean',
+      name: 'Ocean',
+      description: 'Cool ocean-blue tones',
+      preview: ['#0277bd', '#e8f4fd']
+    },
+    rose: {
+      id: 'rose',
+      name: 'Rose',
+      description: 'Soft pink and rose tones',
+      preview: ['#ad1457', '#fdf0f5']
+    },
+    retro: {
+      id: 'retro',
+      name: 'Retro',
+      description: 'Dark arcade-style purple theme',
+      preview: ['#ce93d8', '#1a0a2e']
     }
   };
 
