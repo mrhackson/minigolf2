@@ -1,27 +1,40 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  const closeMenu = () => setMenuOpen(false)
+  const handleLogout = () => { logout(); closeMenu() }
 
   return (
     <nav>
       <div>
-        <Link to="/" className="brand">⛳ Minigolf</Link>
+        <Link to="/" className="brand" onClick={closeMenu}>⛳ Minigolf</Link>
       </div>
-      <div>
+      <button
+        className="nav-hamburger"
+        onClick={() => setMenuOpen((o) => !o)}
+        aria-label="Toggle navigation"
+        aria-expanded={menuOpen}
+      >
+        {menuOpen ? '✕' : '☰'}
+      </button>
+      <div className={`nav-links${menuOpen ? ' open' : ''}`}>
         {user ? (
           <>
-            <Link to="/">Dashboard</Link>
-            <Link to="/history">History</Link>
-            <Link to="/settings">Settings</Link>
-            <span style={{ marginLeft: 16, opacity: 0.85 }}>{user.username}</span>
-            <button onClick={logout} style={{ marginLeft: 12 }}>Logout</button>
+            <Link to="/" onClick={closeMenu}>Dashboard</Link>
+            <Link to="/history" onClick={closeMenu}>History</Link>
+            <Link to="/settings" onClick={closeMenu}>Settings</Link>
+            <span className="nav-username">{user.username}</span>
+            <button onClick={handleLogout}>Logout</button>
           </>
         ) : (
           <>
-            <Link to="/login">Login</Link>
-            <Link to="/register">Register</Link>
+            <Link to="/login" onClick={closeMenu}>Login</Link>
+            <Link to="/register" onClick={closeMenu}>Register</Link>
           </>
         )}
       </div>

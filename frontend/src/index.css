@@ -227,6 +227,8 @@ nav {
   align-items: center;
   color: white;
   box-shadow: 0 2px 4px var(--shadow-nav);
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 nav a {
@@ -258,6 +260,23 @@ nav button {
 
 nav button:hover {
   background: var(--nav-button-hover);
+}
+
+.nav-hamburger {
+  display: none;
+  font-size: 1.3rem;
+  line-height: 1;
+  padding: 6px 10px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+}
+
+.nav-username {
+  margin-left: 16px;
+  opacity: 0.85;
 }
 
 /* Forms */
@@ -400,6 +419,7 @@ nav button:hover {
 .scorecard-wrapper {
   overflow-x: auto;
   margin: 16px 0;
+  -webkit-overflow-scrolling: touch;
 }
 
 .scorecard {
@@ -499,13 +519,77 @@ nav button:hover {
 }
 
 /* Responsive */
-@media (max-width: 600px) {
-  nav {
-    flex-direction: column;
-    gap: 8px;
+@media (max-width: 768px) {
+  .nav-hamburger {
+    display: block;
   }
+
+  .nav-links {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 8px 0 4px;
+    border-top: 1px solid var(--nav-button-border);
+  }
+
+  .nav-links.open {
+    display: flex;
+  }
+
+  .nav-links a,
+  .nav-links .nav-username {
+    margin-left: 0;
+    padding: 8px 4px;
+    width: 100%;
+  }
+
+  .nav-links button {
+    margin-left: 0;
+    margin-top: 4px;
+    width: 100%;
+    text-align: left;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 600px) {
   .container {
     padding: 12px;
+  }
+
+  .btn {
+    min-height: 44px;
+    padding: 10px 18px;
+  }
+
+  .controls-panel-actions {
+    flex-direction: column;
+  }
+
+  .controls-panel-actions .btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-card {
+    padding: 20px 16px;
+  }
+
+  .container {
+    padding: 8px;
+  }
+
+  .scorecard-wrapper::after {
+    content: '⟵ scroll sideways ⟶';
+    display: block;
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    padding: 4px 0 2px;
   }
 }
 
@@ -564,14 +648,40 @@ nav button:hover {
   .scorecard input[type="number"] {
     width: 45px;
   }
-  
+
   .btn-sm {
     padding: 4px 8px;
     font-size: 0.75rem;
+    min-height: 44px;
   }
-  
+
   .player-management input[type="text"] {
     min-width: 120px;
     margin-bottom: 8px;
+    min-height: 44px;
+  }
+
+  .player-management > div {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .player-management .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .invite-box {
+    flex-direction: column;
+  }
+
+  .invite-box input {
+    min-width: unset;
+    width: 100%;
+  }
+
+  .invite-box .btn {
+    width: 100%;
+    text-align: center;
   }
 }
