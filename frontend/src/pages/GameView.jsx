@@ -73,16 +73,33 @@ export default function GameView() {
             if (!prev) return prev
             return {
               ...prev,
-              status: data.status,
-              num_holes: data.num_holes,
-            }
-          })
+
+    let cancelled = false
+
+    const poll = async () => {
+      if (cancelled) return
+
+      if (!isDirtyRef.current) {
+        try {
+          const { data } = await api.get(`/games/${id}/`)
+          if (!cancelled) {
+            applyGameData(data)
+          }
+        } catch {
+          // Silently ignore transient polling errors
         }
-      } catch {
-        // Silently ignore transient polling errors
       }
-    }, POLL_INTERVAL)
-    return () => clearInterval(interval)
+
+      if (!cancelled) {
+        setTimeout(poll, POLL_INTERVAL)
+      }
+    }
+
+    poll()
+
+   return () => {
+      cancelled = true
+    }
   }, [id, gameStatus, applyGameData])
 
   const handleScoreChange = (playerId, holeNum, value) => {
