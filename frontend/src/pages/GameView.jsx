@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/client'
+import { launchConfetti } from '../utils/confetti'
 
 const POLL_INTERVAL = 5000
 
@@ -18,6 +19,7 @@ export default function GameView() {
   const [newPlayerName, setNewPlayerName] = useState('')
   const [controlsOpen, setControlsOpen] = useState(false)
   const isDirtyRef = useRef(false)
+  const confettiShown = useRef(false)
 
   const applyGameData = useCallback((data) => {
     setGame(data)
@@ -57,39 +59,33 @@ export default function GameView() {
   const gameStatus = game?.status
 
   // Auto-refresh scores every POLL_INTERVAL ms while the game is active.
-  // Polling is skipped when the user has unsaved local edits to avoid overwriting them.
+  // Uses recursive setTimeout to avoid overlapping requests.
+  // While the user has unsaved edits, only non-destructive fields are updated.
   useEffect(() => {
     if (gameStatus !== 'active') return
-    const interval = setInterval(async () => {
-      try {
-        const { data } = await api.get(`/games/${id}/`)
-        if (!isDirtyRef.current) {
-          // No local edits pending: safely apply full server state.
-          applyGameData(data)
-        } else {
-          // Local edits pending: only apply non-destructive fields so we
-          // still pick up important remote changes like status/num_holes.
-          setGame((prev) => {
-            if (!prev) return prev
-            return {
-              ...prev,
 
     let cancelled = false
 
     const poll = async () => {
       if (cancelled) return
-
-      if (!isDirtyRef.current) {
-        try {
-          const { data } = await api.get(`/games/${id}/`)
-          if (!cancelled) {
+      try {
+        const { data } = await api.get(`/games/${id}/`)
+        if (!cancelled) {
+          if (!isDirtyRef.current) {
+            // No local edits pending: safely apply full server state.
             applyGameData(data)
+          } else {
+            // Local edits pending: only apply non-destructive fields so we
+            // still pick up important remote changes like status/num_holes.
+            setGame((prev) => {
+              if (!prev) return prev
+              return { ...prev, status: data.status, num_holes: data.num_holes }
+            })
           }
-        } catch {
-          // Silently ignore transient polling errors
         }
+      } catch {
+        // Silently ignore transient polling errors
       }
-
       if (!cancelled) {
         setTimeout(poll, POLL_INTERVAL)
       }
@@ -97,10 +93,30 @@ export default function GameView() {
 
     poll()
 
-   return () => {
+    return () => {
       cancelled = true
     }
   }, [id, gameStatus, applyGameData])
+
+  // Confetti when logged-in player wins a completed game
+  useEffect(() => {
+    if (!game || game.status !== 'completed' || !allPlayers.length) return
+    if (confettiShown.current) return
+
+    // total === 0 means no scores recorded; filter those players out of winner logic
+    const playersWithScores = allPlayers.filter((p) => p.total > 0)
+    if (!playersWithScores.length) return
+
+    const minTotal = Math.min(...playersWithScores.map((p) => p.total))
+    const myPlayer = allPlayers.find((p) => p.type === 'user' && p.user_id === user.id)
+    if (!myPlayer || myPlayer.total !== minTotal) return
+
+    confettiShown.current = true
+    const primaryColor = getComputedStyle(document.documentElement)
+      .getPropertyValue('--primary-color')
+      .trim()
+    launchConfetti([primaryColor, '#ffffff', '#ffd700'])
+  }, [game, allPlayers, user])
 
   const handleScoreChange = (playerId, holeNum, value) => {
     isDirtyRef.current = true
@@ -235,6 +251,17 @@ export default function GameView() {
   const holes = Array.from({ length: game.num_holes }, (_, i) => i + 1)
   const isCreator = game.is_creator
   const canEditAllScores = isCreator && game.status === 'active'
+  const isCompleted = game.status === 'completed'
+
+  // Determine winner(s) — lowest total among players who have at least one score
+  // (total === 0 means no scores were recorded for that player)
+  const winnerPlayerIds = (() => {
+    if (!isCompleted || !allPlayers.length) return new Set()
+    const playersWithScores = allPlayers.filter((p) => p.total > 0)
+    if (!playersWithScores.length) return new Set()
+    const minTotal = Math.min(...playersWithScores.map((p) => p.total))
+    return new Set(playersWithScores.filter((p) => p.total === minTotal).map((p) => p.player_id))
+  })()
 
   return (
     <>
@@ -312,8 +339,10 @@ export default function GameView() {
               <th>Hole</th>
               {allPlayers.map((p) => {
                 const isMe = p.type === 'user' && p.user_id === user.id
+                const isWinner = winnerPlayerIds.has(p.player_id)
                 return (
-                  <th key={p.player_id}>
+                  <th key={p.player_id} className={isWinner ? 'winner-col' : ''}>
+                    {isWinner && '🏆 '}
                     {p.username}
                     {isMe && ' (you)'}
                     {p.type === 'guest' && ' (guest)'}
@@ -340,8 +369,9 @@ export default function GameView() {
                   const isMe = p.type === 'user' && p.user_id === user.id
                   const canEditPlayer = canEditAllScores || isMe
                   const playerScores = scores[p.player_id] || {}
+                  const isWinner = winnerPlayerIds.has(p.player_id)
                   return (
-                    <td key={p.player_id}>
+                    <td key={p.player_id} className={isWinner ? 'winner-col' : ''}>
                       {canEditPlayer && game.status === 'active' ? (
                         <input
                           type="number"
@@ -351,7 +381,7 @@ export default function GameView() {
                           style={{ width: '60px' }}
                         />
                       ) : (
-                        playerScores[h] || '-'
+                        playerScores[h] ?? '-'
                       )}
                     </td>
                   )
@@ -361,14 +391,22 @@ export default function GameView() {
             <tr>
               <td className="total-col">Total</td>
               {allPlayers.map((p) => {
+                const isWinner = winnerPlayerIds.has(p.player_id)
                 const playerScores = scores[p.player_id] || {}
-                const total = Object.values(playerScores).reduce(
+                const calculatedTotal = Object.values(playerScores).reduce(
                   (sum, v) => sum + (parseInt(v) || 0),
                   0
                 )
+                // For completed games, prefer server-calculated total; for active games use live state
+                const displayTotal = isCompleted
+                  ? (p.total > 0 ? p.total : calculatedTotal > 0 ? calculatedTotal : '-')
+                  : (calculatedTotal > 0 ? calculatedTotal : '-')
                 return (
-                  <td key={p.player_id} className="total-col">
-                    {total || '-'}
+                  <td
+                    key={p.player_id}
+                    className={`total-col${isWinner ? ' winner-col' : ''}`}
+                  >
+                    {displayTotal}
                   </td>
                 )
               })}
