@@ -80,6 +80,114 @@
   --total-bg: #1f2a3a;
 }
 
+/* Sunset Theme */
+[data-theme="sunset"] {
+  --primary-color: #e65100;
+  --primary-hover: #bf360c;
+  --primary-light: #fff3e0;
+  --background: #fdf6f0;
+  --surface: #ffffff;
+  --text-primary: #3e2723;
+  --text-secondary: #795548;
+  --text-meta: #5d4037;
+  --secondary-color: #f57c00;
+  --secondary-hover: #e65100;
+  --danger-color: #c62828;
+  --danger-hover: #b71c1c;
+  --info-color: #0277bd;
+  --info-light: #e1f5fe;
+  --border-color: #ffccbc;
+  --border-light: #ffe0b2;
+  --input-background: #fff8f5;
+  --shadow: rgba(230, 81, 0, 0.1);
+  --shadow-nav: rgba(230, 81, 0, 0.2);
+  --nav-button-bg: rgba(255, 255, 255, 0.2);
+  --nav-button-border: rgba(255, 255, 255, 0.4);
+  --nav-button-hover: rgba(255, 255, 255, 0.3);
+  --total-bg: #fff3e0;
+}
+
+/* Ocean Theme */
+[data-theme="ocean"] {
+  --primary-color: #0277bd;
+  --primary-hover: #01579b;
+  --primary-light: #e1f5fe;
+  --background: #e8f4fd;
+  --surface: #ffffff;
+  --text-primary: #01234e;
+  --text-secondary: #546e7a;
+  --text-meta: #37474f;
+  --secondary-color: #0288d1;
+  --secondary-hover: #0277bd;
+  --danger-color: #c62828;
+  --danger-hover: #b71c1c;
+  --info-color: #006064;
+  --info-light: #e0f7fa;
+  --border-color: #b3d9f0;
+  --border-light: #cce5f5;
+  --input-background: #f0f9ff;
+  --shadow: rgba(2, 119, 189, 0.1);
+  --shadow-nav: rgba(2, 119, 189, 0.2);
+  --nav-button-bg: rgba(255, 255, 255, 0.2);
+  --nav-button-border: rgba(255, 255, 255, 0.4);
+  --nav-button-hover: rgba(255, 255, 255, 0.3);
+  --total-bg: #e1f5fe;
+}
+
+/* Rose Theme */
+[data-theme="rose"] {
+  --primary-color: #ad1457;
+  --primary-hover: #880e4f;
+  --primary-light: #fce4ec;
+  --background: #fdf0f5;
+  --surface: #ffffff;
+  --text-primary: #2d0a1a;
+  --text-secondary: #78597a;
+  --text-meta: #5c3d5e;
+  --secondary-color: #c2185b;
+  --secondary-hover: #ad1457;
+  --danger-color: #b71c1c;
+  --danger-hover: #a00000;
+  --info-color: #6a1b9a;
+  --info-light: #f3e5f5;
+  --border-color: #f8bbd0;
+  --border-light: #fce4ec;
+  --input-background: #fdf7fa;
+  --shadow: rgba(173, 20, 87, 0.1);
+  --shadow-nav: rgba(173, 20, 87, 0.2);
+  --nav-button-bg: rgba(255, 255, 255, 0.2);
+  --nav-button-border: rgba(255, 255, 255, 0.4);
+  --nav-button-hover: rgba(255, 255, 255, 0.3);
+  --total-bg: #fce4ec;
+}
+
+/* Retro Theme */
+[data-theme="retro"] {
+  --primary-color: #ce93d8;
+  --primary-hover: #ba68c8;
+  --primary-light: #2a1a3e;
+  --background: #1a0a2e;
+  --surface: #2d1b45;
+  --text-primary: #f3e5f5;
+  --text-secondary: #ce93d8;
+  --text-meta: #e1bee7;
+  --secondary-color: #ab47bc;
+  --secondary-hover: #8e24aa;
+  --danger-color: #ff6b8a;
+  --danger-hover: #e91e63;
+  --info-color: #80deea;
+  --info-light: #1a2a35;
+  --border-color: #4a2060;
+  --border-light: #3d1a55;
+  --input-background: #3d1a55;
+  --shadow: rgba(206, 147, 216, 0.2);
+  --shadow-nav: rgba(0, 0, 0, 0.5);
+  --nav-button-bg: rgba(255, 255, 255, 0.08);
+  --nav-button-border: rgba(255, 255, 255, 0.15);
+  --nav-button-hover: rgba(255, 255, 255, 0.15);
+  --total-bg: #2a1a3e;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;

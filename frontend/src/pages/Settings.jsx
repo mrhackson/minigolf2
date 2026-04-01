@@ -82,24 +82,15 @@ const Settings = () => {
                   gap: '4px',
                   alignItems: 'center'
                 }}>
-                  {themeOption.id === 'default' && (
-                    <>
-                      <div style={{ width: '12px', height: '12px', backgroundColor: '#2e7d32', borderRadius: '50%' }}></div>
-                      <div style={{ width: '12px', height: '12px', backgroundColor: '#f0f4f0', borderRadius: '50%', border: '1px solid #ccc' }}></div>
-                    </>
-                  )}
-                  {themeOption.id === 'dark' && (
-                    <>
-                      <div style={{ width: '12px', height: '12px', backgroundColor: '#4caf50', borderRadius: '50%' }}></div>
-                      <div style={{ width: '12px', height: '12px', backgroundColor: '#1e1e1e', borderRadius: '50%' }}></div>
-                    </>
-                  )}
-                  {themeOption.id === 'midnight' && (
-                    <>
-                      <div style={{ width: '12px', height: '12px', backgroundColor: '#3f51b5', borderRadius: '50%' }}></div>
-                      <div style={{ width: '12px', height: '12px', backgroundColor: '#0d1421', borderRadius: '50%' }}></div>
-                    </>
-                  )}
+                  {themeOption.preview && themeOption.preview.map((color, i) => (
+                    <div key={i} style={{
+                      width: '12px',
+                      height: '12px',
+                      backgroundColor: color,
+                      borderRadius: '50%',
+                      border: '1px solid rgba(0,0,0,0.15)'
+                    }}></div>
+                  ))}
                 </div>
               </div>
             </div>
