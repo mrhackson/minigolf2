@@ -85,7 +85,11 @@ function Stop-BackendService {
     if (Test-Path $pidFile) {
         $processId = Get-Content $pidFile -ErrorAction SilentlyContinue
         if ($processId) {
-            Stop-Process -Id ([int]$processId) -Force -ErrorAction SilentlyContinue
+            $processId = $processId.Trim()
+            $backendProcess = Get-Process -Id ([int]$processId) -ErrorAction SilentlyContinue
+            if ($backendProcess -and $backendProcess.ProcessName -eq "powershell") {
+                Stop-Process -Id $backendProcess.Id -Force -ErrorAction SilentlyContinue
+            }
         }
         Remove-Item $pidFile -ErrorAction SilentlyContinue
     }
