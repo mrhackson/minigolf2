@@ -83,9 +83,8 @@ function Stop-BackendService {
     Write-ColorOutput "Stopping Django backend..." "Yellow"
     $pidFile = "$PidDir\backend.pid"
     if (Test-Path $pidFile) {
-        $processId = Get-Content $pidFile -ErrorAction SilentlyContinue
-        if ($processId) {
-            $processId = $processId.Trim()
+        $processId = (Get-Content $pidFile -ErrorAction SilentlyContinue | Select-Object -First 1).Trim()
+        if ($processId -match '^\d+$') {
             $backendProcess = Get-Process -Id ([int]$processId) -ErrorAction SilentlyContinue
             if ($backendProcess -and $backendProcess.ProcessName -eq "powershell") {
                 Stop-Process -Id $backendProcess.Id -Force -ErrorAction SilentlyContinue
@@ -102,11 +101,11 @@ function Stop-FrontendService {
     Write-ColorOutput "Stopping Vite frontend..." "Yellow"
     $pidFile = "$PidDir\frontend.pid"
     if (Test-Path $pidFile) {
-        $processId = Get-Content $pidFile -ErrorAction SilentlyContinue
-        if ($processId) {
+        $processId = (Get-Content $pidFile -ErrorAction SilentlyContinue | Select-Object -First 1).Trim()
+        if ($processId -match '^\d+$') {
             $frontendProcess = Get-Process -Id ([int]$processId) -ErrorAction SilentlyContinue
-            if ($frontendProcess -and $frontendProcess.ProcessName -eq 'powershell') {
-                Stop-Process -Id ([int]$processId) -Force -ErrorAction SilentlyContinue
+            if ($frontendProcess -and $frontendProcess.ProcessName -eq "powershell") {
+                Stop-Process -Id $frontendProcess.Id -Force -ErrorAction SilentlyContinue
             }
         }
         Remove-Item $pidFile -ErrorAction SilentlyContinue

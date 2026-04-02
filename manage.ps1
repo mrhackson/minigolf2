@@ -90,8 +90,16 @@ function Start-BackendService {
     $pidFile = "$PidDir\backend.pid"
     
     if (Test-Path $pidFile) {
-        $storedPid = Get-Content $pidFile -ErrorAction SilentlyContinue
-        $existingProcess = if ($storedPid) { Get-Process -Id ([int]$storedPid) -ErrorAction SilentlyContinue } else { $null }
+        $storedPid = (Get-Content $pidFile -ErrorAction SilentlyContinue | Select-Object -First 1).Trim()
+        $existingProcess = $null
+        if ($storedPid -match '^\d+$') {
+            try {
+                $candidate = Get-Process -Id ([int]$storedPid) -ErrorAction SilentlyContinue
+                if ($candidate -and $candidate.ProcessName -eq "powershell") {
+                    $existingProcess = $candidate
+                }
+            } catch { }
+        }
         if ($existingProcess) {
             Write-ColorOutput "Backend appears to be running already. Use 'stop-backend' first." $Colors.Yellow
             return
@@ -114,8 +122,16 @@ function Start-FrontendService {
     $pidFile = "$PidDir\frontend.pid"
     
     if (Test-Path $pidFile) {
-        $storedPid = Get-Content $pidFile -ErrorAction SilentlyContinue
-        $existingProcess = if ($storedPid) { Get-Process -Id ([int]$storedPid) -ErrorAction SilentlyContinue } else { $null }
+        $storedPid = (Get-Content $pidFile -ErrorAction SilentlyContinue | Select-Object -First 1).Trim()
+        $existingProcess = $null
+        if ($storedPid -match '^\d+$') {
+            try {
+                $candidate = Get-Process -Id ([int]$storedPid) -ErrorAction SilentlyContinue
+                if ($candidate -and $candidate.ProcessName -eq "powershell") {
+                    $existingProcess = $candidate
+                }
+            } catch { }
+        }
         if ($existingProcess) {
             Write-ColorOutput "Frontend appears to be running already. Use 'stop-frontend' first." $Colors.Yellow
             return
@@ -145,17 +161,15 @@ function Stop-BackendService {
     
     if (Test-Path $pidFile) {
         Write-ColorOutput "Stopping Django backend..." $Colors.Yellow
-        $processId = Get-Content $pidFile -ErrorAction SilentlyContinue
+        $processId = (Get-Content $pidFile -ErrorAction SilentlyContinue | Select-Object -First 1).Trim()
         
-        if ($processId) {
+        if ($processId -match '^\d+$') {
             try {
                 Stop-Process -Id ([int]$processId) -Force -ErrorAction SilentlyContinue
-                Remove-Item $pidFile -ErrorAction SilentlyContinue
-                Write-ColorOutput "Backend stopped" $Colors.Green
-            } catch {
-                Remove-Item $pidFile -ErrorAction SilentlyContinue
-            }
+            } catch { }
         }
+        Remove-Item $pidFile -ErrorAction SilentlyContinue
+        Write-ColorOutput "Backend stopped" $Colors.Green
     }
     
     # Simple cleanup of Python processes
@@ -175,17 +189,15 @@ function Stop-FrontendService {
     
     if (Test-Path $pidFile) {
         Write-ColorOutput "Stopping Vite frontend..." $Colors.Yellow
-        $processId = Get-Content $pidFile -ErrorAction SilentlyContinue
+        $processId = (Get-Content $pidFile -ErrorAction SilentlyContinue | Select-Object -First 1).Trim()
         
-        if ($processId) {
+        if ($processId -match '^\d+$') {
             try {
                 Stop-Process -Id ([int]$processId) -Force -ErrorAction SilentlyContinue
-                Remove-Item $pidFile -ErrorAction SilentlyContinue
-                Write-ColorOutput "Frontend stopped" $Colors.Green
-            } catch {
-                Remove-Item $pidFile -ErrorAction SilentlyContinue
-            }
+            } catch { }
         }
+        Remove-Item $pidFile -ErrorAction SilentlyContinue
+        Write-ColorOutput "Frontend stopped" $Colors.Green
     }
     
     # Simple cleanup of Node processes
@@ -209,17 +221,15 @@ function Show-Status {
     Write-Host "Backend:  " -NoNewline
     
     if (Test-Path $backendPidFile) {
-        $processId = Get-Content $backendPidFile -ErrorAction SilentlyContinue
-        try {
-            $process = Get-Process -Id ([int]$processId) -ErrorAction SilentlyContinue
-            if ($process) {
-                Write-ColorOutput "Running (PID: $processId)" $Colors.Green
-            } else {
-                Write-ColorOutput "Not running (stale PID file)" $Colors.Red
-                Remove-Item $backendPidFile -ErrorAction SilentlyContinue
-            }
-        } catch {
-            Write-ColorOutput "Not running (invalid PID)" $Colors.Red
+        $processId = (Get-Content $backendPidFile -ErrorAction SilentlyContinue | Select-Object -First 1).Trim()
+        $process = $null
+        if ($processId -match '^\d+$') {
+            try { $process = Get-Process -Id ([int]$processId) -ErrorAction SilentlyContinue } catch { }
+        }
+        if ($process -and $process.ProcessName -eq "powershell") {
+            Write-ColorOutput "Running (PID: $processId)" $Colors.Green
+        } else {
+            Write-ColorOutput "Not running (stale PID file)" $Colors.Red
             Remove-Item $backendPidFile -ErrorAction SilentlyContinue
         }
     } else {
@@ -231,17 +241,15 @@ function Show-Status {
     Write-Host "Frontend: " -NoNewline
     
     if (Test-Path $frontendPidFile) {
-        $processId = Get-Content $frontendPidFile -ErrorAction SilentlyContinue
-        try {
-            $process = Get-Process -Id ([int]$processId) -ErrorAction SilentlyContinue
-            if ($process) {
-                Write-ColorOutput "Running (PID: $processId)" $Colors.Green
-            } else {
-                Write-ColorOutput "Not running (stale PID file)" $Colors.Red
-                Remove-Item $frontendPidFile -ErrorAction SilentlyContinue
-            }
-        } catch {
-            Write-ColorOutput "Not running (invalid PID)" $Colors.Red
+        $processId = (Get-Content $frontendPidFile -ErrorAction SilentlyContinue | Select-Object -First 1).Trim()
+        $process = $null
+        if ($processId -match '^\d+$') {
+            try { $process = Get-Process -Id ([int]$processId) -ErrorAction SilentlyContinue } catch { }
+        }
+        if ($process -and $process.ProcessName -eq "powershell") {
+            Write-ColorOutput "Running (PID: $processId)" $Colors.Green
+        } else {
+            Write-ColorOutput "Not running (stale PID file)" $Colors.Red
             Remove-Item $frontendPidFile -ErrorAction SilentlyContinue
         }
     } else {
