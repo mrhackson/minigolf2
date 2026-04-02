@@ -13,7 +13,12 @@ export function launchConfetti(colors = ['#2e7d32', '#ffffff', '#ffd700']) {
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight
 
-  const PARTICLE_COUNT = Math.round(canvas.width / 8)
+  const MIN_PARTICLE_COUNT = 20
+  const MAX_PARTICLE_COUNT = 250
+  const PARTICLE_COUNT = Math.max(
+    MIN_PARTICLE_COUNT,
+    Math.min(MAX_PARTICLE_COUNT, Math.round(canvas.width / 8))
+  )
   const GRAVITY = 0.15
   const FADE_DURATION = 180 // frames
 
