@@ -100,7 +100,10 @@ function Stop-FrontendService {
     if (Test-Path $pidFile) {
         $processId = Get-Content $pidFile -ErrorAction SilentlyContinue
         if ($processId) {
-            Stop-Process -Id ([int]$processId) -Force -ErrorAction SilentlyContinue
+            $frontendProcess = Get-Process -Id ([int]$processId) -ErrorAction SilentlyContinue
+            if ($frontendProcess -and $frontendProcess.ProcessName -eq 'powershell') {
+                Stop-Process -Id ([int]$processId) -Force -ErrorAction SilentlyContinue
+            }
         }
         Remove-Item $pidFile -ErrorAction SilentlyContinue
     }
