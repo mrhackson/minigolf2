@@ -12,6 +12,12 @@ $BackendDir = "backend"
 $FrontendDir = "frontend"
 $BackendPort = 8000
 $FrontendPort = 5173
+$PidDir = ".pids"
+
+# Ensure PID directory exists
+if (!(Test-Path $PidDir)) {
+    New-Item -ItemType Directory -Path $PidDir -Force | Out-Null
+}
 
 function Write-ColorOutput {
     param([string]$Text, [string]$Color = "White")
@@ -55,13 +61,15 @@ function Start-AllServices {
 
 function Start-BackendService {
     Write-ColorOutput "Starting Django backend in new window..." "Yellow"
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$BackendDir'; python manage.py runserver $BackendPort" -WindowStyle Normal
+    $process = Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$BackendDir'; python manage.py runserver $BackendPort" -WindowStyle Normal -PassThru
+    $process.Id | Out-File -FilePath "$PidDir\backend.pid" -Encoding UTF8
     Write-ColorOutput "Backend starting on port $BackendPort" "Green"
 }
 
 function Start-FrontendService {
     Write-ColorOutput "Starting Vite frontend in new window..." "Yellow"
-    Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$FrontendDir'; npm run dev -- --port $FrontendPort" -WindowStyle Normal
+    $process = Start-Process powershell -ArgumentList "-NoExit", "-Command", "cd '$FrontendDir'; npm run dev -- --port $FrontendPort" -WindowStyle Normal -PassThru
+    $process.Id | Out-File -FilePath "$PidDir\frontend.pid" -Encoding UTF8
     Write-ColorOutput "Frontend starting on port $FrontendPort" "Green"
 }
 
@@ -73,24 +81,32 @@ function Stop-AllServices {
 
 function Stop-BackendService {
     Write-ColorOutput "Stopping Django backend..." "Yellow"
-    Get-Process python -ErrorAction SilentlyContinue | Where-Object { 
-        $_.ProcessName -eq "python" 
-    } | ForEach-Object { 
-        Write-ColorOutput "Stopping Python process (PID: $($_.Id))" "Yellow"
-        Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue
+    $pidFile = "$PidDir\backend.pid"
+    if (Test-Path $pidFile) {
+        $processId = Get-Content $pidFile -ErrorAction SilentlyContinue
+        if ($processId) {
+            Stop-Process -Id ([int]$processId) -Force -ErrorAction SilentlyContinue
+        }
+        Remove-Item $pidFile -ErrorAction SilentlyContinue
     }
-    Write-ColorOutput "Backend processes stopped" "Green"
+    # Fallback: kill any remaining Python processes
+    Get-Process python -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Write-ColorOutput "Backend stopped" "Green"
 }
 
 function Stop-FrontendService {
-    Write-ColorOutput "Stopping Vite frontend..." "Yellow"  
-    Get-Process node -ErrorAction SilentlyContinue | Where-Object { 
-        $_.ProcessName -eq "node"
-    } | ForEach-Object { 
-        Write-ColorOutput "Stopping Node process (PID: $($_.Id))" "Yellow"
-        Stop-Process -Id $_.Id -Force -ErrorAction SilentlyContinue
+    Write-ColorOutput "Stopping Vite frontend..." "Yellow"
+    $pidFile = "$PidDir\frontend.pid"
+    if (Test-Path $pidFile) {
+        $processId = Get-Content $pidFile -ErrorAction SilentlyContinue
+        if ($processId) {
+            Stop-Process -Id ([int]$processId) -Force -ErrorAction SilentlyContinue
+        }
+        Remove-Item $pidFile -ErrorAction SilentlyContinue
     }
-    Write-ColorOutput "Frontend processes stopped" "Green"
+    # Fallback: kill any remaining Node processes
+    Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Write-ColorOutput "Frontend stopped" "Green"
 }
 
 function Show-Status {
@@ -120,6 +136,11 @@ function Show-Status {
 function Clean-Up {
     Stop-AllServices
     Write-ColorOutput "Cleaning up..." "Yellow"
+    
+    # Remove PID directory
+    if (Test-Path $PidDir) {
+        Remove-Item $PidDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
     
     # Clean Python cache files
     Get-ChildItem -Path $BackendDir -Recurse -Name "*.pyc" -ErrorAction SilentlyContinue | Remove-Item -Force -ErrorAction SilentlyContinue
