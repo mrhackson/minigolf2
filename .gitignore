@@ -1,1 +1,3 @@
 **/__pycache__/
+.pids/backend.pid
+.pids/frontend.pid
