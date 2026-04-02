@@ -13,15 +13,20 @@ export function launchConfetti(colors = ['#2e7d32', '#ffffff', '#ffd700']) {
   canvas.width = window.innerWidth
   canvas.height = window.innerHeight
 
-  const PARTICLE_COUNT = 150
-  const GRAVITY = 0.4
+  const MIN_PARTICLE_COUNT = 20
+  const MAX_PARTICLE_COUNT = 250
+  const PARTICLE_COUNT = Math.max(
+    MIN_PARTICLE_COUNT,
+    Math.min(MAX_PARTICLE_COUNT, Math.round(canvas.width / 8))
+  )
+  const GRAVITY = 0.15
   const FADE_DURATION = 180 // frames
 
   const particles = Array.from({ length: PARTICLE_COUNT }, () => ({
     x: Math.random() * canvas.width,
     y: Math.random() * canvas.height * -0.5,
-    vx: (Math.random() - 0.5) * 6,
-    vy: Math.random() * 4 + 2,
+    vx: (Math.random() - 0.5) * 4,
+    vy: Math.random() * 2 + 1,
     width: Math.random() * 10 + 6,
     height: Math.random() * 6 + 4,
     angle: Math.random() * Math.PI * 2,
