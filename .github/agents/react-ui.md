@@ -64,8 +64,11 @@ frontend/
 ## Styling System
 
 ### CSS Custom Properties (Theming)
-All colors are defined as CSS custom properties in `:root` and overridden in `[data-theme="..."]` selectors. **Never hard-code colors.** Always use `var(--property-name)`.
+All UI styling colors should come from CSS custom properties defined in `:root` and overridden in `[data-theme="..."]` selectors. Avoid hard-coded colors in components, pages, and shared UI styles; use `var(--property-name)` instead.
 
+Allowed exceptions:
+- Theme definitions and theme preview swatches may use hard-coded color values when representing the theme itself.
+- Non-UI decorative/effect code (for example, confetti) may use hard-coded colors when theme variables are not appropriate.
 Available variables:
 | Variable | Purpose |
 |---|---|
