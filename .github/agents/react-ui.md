@@ -41,7 +41,10 @@ frontend/
 
 ### General Rules
 - Use **functional components** with React hooks. Never use class components.
-- Export components as `export default function ComponentName()`.
+- **Export conventions:**
+  - **Pages and components** use default exports: `export default function ComponentName()`.
+  - **Context providers and hooks** use named exports: `export function AuthProvider()`, `export function useAuth()`.
+  - **Utility functions** use named exports: `export function launchConfetti()`.
 - Keep components small and focused — one responsibility per component.
 - State management uses `useState`, `useEffect`, `useCallback`, and `useRef`.
 - Shared state lives in Context providers (`AuthContext`, `ThemeContext`). Use `useAuth()` and `useTheme()` hooks to consume them.
@@ -69,6 +72,7 @@ All UI styling colors should come from CSS custom properties defined in `:root` 
 Allowed exceptions:
 - Theme definitions and theme preview swatches may use hard-coded color values when representing the theme itself.
 - Non-UI decorative/effect code (for example, confetti) may use hard-coded colors when theme variables are not appropriate.
+
 Available variables:
 | Variable | Purpose |
 |---|---|
@@ -138,7 +142,7 @@ The app uses three breakpoints, defined as `max-width` media queries:
 ### Mobile-First Considerations
 When creating or modifying UI components, always consider:
 
-1. **Touch targets:** Interactive elements (buttons, links, inputs) must have a minimum height of **44px** on mobile (≤768px). This is enforced via `.btn { min-height: 44px }` and similar rules.
+1. **Touch targets:** Interactive elements (buttons, links, inputs) should have a minimum height of **44px** on mobile. The CSS enforces `min-height: 44px` on `.btn` at ≤600px, and on nav buttons, `.btn-sm`, and player management inputs at ≤768px. When adding new interactive elements, ensure they meet 44px minimum height at the appropriate breakpoint.
 
 2. **Stacking on narrow screens:** Horizontal layouts (flex rows) should stack vertically on mobile. Use `flex-wrap: wrap` on containers and `flex-direction: column` in mobile media queries.
 
@@ -198,7 +202,7 @@ When creating or modifying UI components, always consider:
 
 Before considering a change complete, verify:
 
-- [ ] Uses CSS custom properties for all colors (no hard-coded hex/rgb values)
+- [ ] Uses CSS custom properties for all UI styling colors — hard-coded values are only acceptable in theme definitions/previews and non-UI effects like confetti
 - [ ] Works correctly with all 7 themes (default, dark, midnight, sunset, ocean, rose, retro)
 - [ ] Responsive at all 3 breakpoints (768px, 600px, 480px)
 - [ ] Touch targets are ≥44px on mobile
