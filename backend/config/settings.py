@@ -17,6 +17,17 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+def get_sqlite_path():
+    sqlite_path = os.getenv('SQLITE_PATH')
+    if not sqlite_path:
+        return BASE_DIR / 'db.sqlite3'
+
+    path = Path(sqlite_path)
+    if path.suffix:
+        return path
+    return path / 'db.sqlite3'
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
@@ -109,7 +120,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.getenv('SQLITE_PATH', str(BASE_DIR / 'db.sqlite3')),
+        'NAME': str(get_sqlite_path()),
     }
 }
 
