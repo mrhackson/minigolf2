@@ -123,9 +123,14 @@ docker compose up --build
 # Start in detached mode
 docker compose up -d --build
 
+# Run backend migrations (first run and after model changes)
+docker compose run --rm backend python manage.py migrate
+
 # Stop containers
 docker compose down
 ```
+
+> Note: The Docker setup uses Django's development server (`runserver`) and is intended for local development.
 
 ## Application URLs
 
@@ -236,7 +241,7 @@ If you get port conflicts, you can modify the ports in the management scripts:
 
 ### Docker
 - Make sure Docker Desktop or Docker Engine with Compose is installed
-- If container builds fail due cached layers, retry with `docker compose build --no-cache`
+- If container builds fail due to cached layers, retry with `docker compose build --no-cache`
 
 ## Contributing
 
