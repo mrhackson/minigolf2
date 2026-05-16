@@ -128,6 +128,9 @@ docker compose run --rm backend python manage.py migrate
 
 # Stop containers
 docker compose down
+
+# Stop containers and remove persisted database volume
+docker compose down -v
 ```
 
 > Note: The Docker setup uses Django's development server (`runserver`) and is intended for local development.

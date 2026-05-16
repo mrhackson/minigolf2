@@ -12,4 +12,5 @@ COPY . .
 
 EXPOSE 8000
 
+# Development server for local use; use a production WSGI server in deployed environments.
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
