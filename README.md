@@ -115,6 +115,27 @@ manage.bat clean
 manage.bat help
 ```
 
+#### Method 4: Docker Compose
+```bash
+# Build and start both services
+docker compose up --build
+
+# Start in detached mode
+docker compose up -d --build
+
+# Run backend migrations (first run and after model changes)
+docker compose run --rm backend python manage.py migrate
+
+# Stop containers
+docker compose down
+
+# Stop containers and remove persisted database volume
+docker compose down -v
+```
+
+> Note: The Docker setup uses Django's development server (`runserver`) and is intended for local development.
+> SQLite data is persisted in the `backend_db` Docker volume.
+
 ## Application URLs
 
 After starting the services:
@@ -221,6 +242,10 @@ If you get port conflicts, you can modify the ports in the management scripts:
 - Make sure Python and Node.js are installed and in your PATH
 - If pip install fails, try upgrading pip: `python -m pip install --upgrade pip`
 - If npm install fails, try clearing cache: `npm cache clean --force`
+
+### Docker
+- Make sure Docker Desktop or Docker Engine with Compose is installed
+- If container builds fail due to cached layers, retry with `docker compose build --no-cache`
 
 ## Contributing
 

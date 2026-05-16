@@ -10,10 +10,23 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def get_sqlite_path():
+    sqlite_path = os.getenv('SQLITE_PATH')
+    if not sqlite_path:
+        return BASE_DIR / 'db.sqlite3'
+
+    sqlite_path_obj = Path(sqlite_path)
+    if sqlite_path_obj.suffix.lower() in {'.sqlite3', '.sqlite', '.db'}:
+        return sqlite_path_obj
+
+    return sqlite_path_obj / 'db.sqlite3'
 
 
 # Quick-start development settings - unsuitable for production
@@ -23,9 +36,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-114hft_a@6pylz%wv@+5*6ldxu_gm7^&h8^%z72%r74&5h==v4'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'False').strip().lower() in {'1', 'true', 'yes', 'on'}
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+    if host.strip()
+]
 
 
 # Application definition
@@ -56,7 +73,9 @@ MIDDLEWARE = [
 
 # CORS
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
+    origin.strip()
+    for origin in os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
+    if origin.strip()
 ]
 
 # DRF
@@ -102,7 +121,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': str(get_sqlite_path()),
     }
 }
 
