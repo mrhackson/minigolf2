@@ -134,6 +134,7 @@ docker compose down -v
 ```
 
 > Note: The Docker setup uses Django's development server (`runserver`) and is intended for local development.
+> SQLite data is persisted in the `backend_db` Docker volume.
 
 ## Application URLs
 
