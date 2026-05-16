@@ -22,10 +22,11 @@ def get_sqlite_path():
     if not sqlite_path:
         return BASE_DIR / 'db.sqlite3'
 
-    if sqlite_path.lower().endswith('.sqlite3'):
-        return Path(sqlite_path)
+    sqlite_path_obj = Path(sqlite_path)
+    if sqlite_path_obj.suffix.lower() in {'.sqlite3', '.sqlite', '.db'}:
+        return sqlite_path_obj
 
-    return Path(sqlite_path) / 'db.sqlite3'
+    return sqlite_path_obj / 'db.sqlite3'
 
 
 # Quick-start development settings - unsuitable for production
