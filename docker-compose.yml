@@ -1,3 +1,4 @@
+# Local development compose configuration (not production-hardened).
 services:
   backend:
     build:
