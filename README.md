@@ -115,6 +115,18 @@ manage.bat clean
 manage.bat help
 ```
 
+#### Method 4: Docker Compose
+```bash
+# Build and start both services
+docker compose up --build
+
+# Start in detached mode
+docker compose up -d --build
+
+# Stop containers
+docker compose down
+```
+
 ## Application URLs
 
 After starting the services:
@@ -221,6 +233,10 @@ If you get port conflicts, you can modify the ports in the management scripts:
 - Make sure Python and Node.js are installed and in your PATH
 - If pip install fails, try upgrading pip: `python -m pip install --upgrade pip`
 - If npm install fails, try clearing cache: `npm cache clean --force`
+
+### Docker
+- Make sure Docker Desktop or Docker Engine with Compose is installed
+- If container builds fail due cached layers, retry with `docker compose build --no-cache`
 
 ## Contributing
 
